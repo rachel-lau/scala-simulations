@@ -79,7 +79,16 @@ abstract class CircuitSimulator extends Simulator {
   }
 
   def demux(in: Wire, c: List[Wire], out: List[Wire]) {
-    ???
+    c match {
+      case Nil => out(0).setSignal(in.getSignal)
+      case w :: ws => {
+        val len = out.length / 2
+        if (w.getSignal == true)
+          demux(in, ws, out.take(len))
+        else
+          demux(in, ws, out.drop(len))
+      }
+    }
   }
 
 }
