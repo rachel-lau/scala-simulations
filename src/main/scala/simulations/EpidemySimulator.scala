@@ -27,7 +27,7 @@ class EpidemySimulator extends Simulator {
   val rooms = {
     val world = Array.ofDim[Room](roomRows, roomColumns)
     for (row <- 0 until roomRows; col <- 0 until roomColumns)
-      world(row)(col) = new Room(0, 0, 0, 0, 0)
+      world(row)(col) = new Room()
     world
   }
 
@@ -36,7 +36,7 @@ class EpidemySimulator extends Simulator {
     val people = (0 until population).toList.map(id => new Person(id))
     for (id <- 0 until numInfected) people(id).infected = true
     for (person <- people) 
-      rooms(person.row)(person.col) count person
+      rooms(person.row)(person.col) enter person
     printRooms
     people
   }
@@ -46,18 +46,25 @@ class EpidemySimulator extends Simulator {
       println("(" + row + "," + col + ")=" + rooms(row)(col))
   }
 
-  class Room(var healthy: Int, var infected: Int, var sick: Int, var immune: Int,
-    var dead: Int) {
-    def reset { healthy = 0; infected = 0; sick = 0; immune = 0; dead = 0 }
-    def count(p: Person) {
-      if (p.infected) infected += 1
-      else if (p.sick) sick += 1
-      else if (p.immune) immune += 1
-      else if (p.dead) dead += 1
-      else healthy += 1
+  class Room() {
+    var people: Set[Person] = new collection.immutable.HashSet()
+
+    def enter(person: Person) {
+      people = people + person
     }
-    override def toString() = "Room(" + healthy + ", " + infected + ", " + 
-      sick + ", " + immune + ", " + dead + ")"
+
+    def leave(person: Person) {
+      people = people - person
+    }
+
+    def isInfected() : Boolean = {
+      val infectious = people filter (p => p.sick || p.dead)
+      !infectious.isEmpty
+    }
+
+    override def toString() = {
+      "Room(" + people.size + ")"
+    }
   }
 
   class Person (val id: Int) {
