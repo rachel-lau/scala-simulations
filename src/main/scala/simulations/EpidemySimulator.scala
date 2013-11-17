@@ -27,7 +27,7 @@ class EpidemySimulator extends Simulator {
   val rooms = {
     val world = Array.ofDim[Room](roomRows, roomColumns)
     for (row <- 0 until roomRows; col <- 0 until roomColumns)
-      world(row)(col) = new Room()
+      world(row)(col) = new Room(row, col)
     world
   }
 
@@ -45,7 +45,7 @@ class EpidemySimulator extends Simulator {
       println("(" + row + "," + col + ")=" + rooms(row)(col))
   }
 
-  class Room() {
+  class Room(val row: Int, val col: Int) {
     var people: Set[Person] = new collection.immutable.HashSet()
 
     def enter(person: Person) {
@@ -62,12 +62,36 @@ class EpidemySimulator extends Simulator {
     }
 
     def size() : Int = {
-      println("people.size=" + people.size)
       people.size
     }
 
+    def toLeft() : Room = {
+      val left = if (col - 1 >= 0) (col - 1) else (roomColumns - 1)
+      rooms(row)(left)
+    }
+
+    def toRight() : Room = {
+      val right = if (col + 1 >= roomColumns) 0 else (col + 1)
+      rooms(row)(right)
+    }
+
+    def toUp() : Room = {
+      val up = if (row + 1 >= roomRows) 0 else (row + 1)
+      rooms(up)(col)
+    }
+
+    def toDown() : Room = {
+      val down = if (row - 1 >= 0) (row - 1) else (roomRows - 1)
+      rooms(down)(col)
+    }
+
+    def neighbours() : Set[Room] = {
+      var neighbours: Set[Room] = new collection.immutable.HashSet()
+      neighbours + toLeft + toRight + toUp + toDown
+    }
+
     override def toString() = {
-      "Room(" + people.size + ")"
+      "Room(" + row + "," + col + ")"
     }
   }
 

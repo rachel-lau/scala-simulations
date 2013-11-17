@@ -26,6 +26,58 @@ class EpidemySuite extends FunSuite {
     assert(roomSizes.sum == es.SimConfig.population, "all people are allocated to rooms")
   }
 
+  test("find correct neightbours of room(0,0)") {
+    val es = new EpidemySimulator
+    val room = es.rooms(0)(0)
+    val left = room.toLeft // Room(0,7)
+    val right = room.toRight // Room(0,1)
+    val up = room.toUp // Room(1,0)
+    val down = room.toDown // Room(7,0)
+    assert(left.row == room.row && left.col == (es.SimConfig.roomColumns - 1))
+    assert(right.row == room.row && right.col == 1)
+    assert(up.row == 1 && up.col == room.col)
+    assert(down.row == (es.SimConfig.roomRows - 1) && up.col == room.col)
+  }
+
+  test("find correct neightbours of room(7,7)") {
+    val es = new EpidemySimulator
+    val room = es.rooms(7)(7)
+    val left = room.toLeft // Room(7,6)
+    val right = room.toRight // Room(7,0)
+    val up = room.toUp // Room(0,7)
+    val down = room.toDown // Room(6,7)
+    assert(left.row == room.row && left.col == room.col - 1)
+    assert(right.row == room.row && right.col == 0)
+    assert(up.row == 0 && up.col == room.col)
+    assert(down.row == room.row - 1 && up.col == room.col)
+  }
+
+  test("find correct neightbours of room(7,0)") {
+    val es = new EpidemySimulator
+    val room = es.rooms(7)(0)
+    val left = room.toLeft // Room(7,7)
+    val right = room.toRight // Room(7,1)
+    val up = room.toUp // Room(0,0)
+    val down = room.toDown // Room(6,0)
+    assert(left.row == room.row && left.col == es.SimConfig.roomColumns - 1)
+    assert(right.row == room.row && right.col == 1)
+    assert(up.row == 0 && up.col == 0)
+    assert(down.row == room.row - 1 && down.col == 0)
+  }
+
+  test("find correct neightbours of room(0,7)") {
+    val es = new EpidemySimulator
+    val room = es.rooms(0)(7)
+    val left = room.toLeft // Room(0,6)
+    val right = room.toRight // Room(0,0)
+    val up = room.toUp // Room(1,7)
+    val down = room.toDown // Room(7,7)
+    assert(left.row == room.row && left.col == room.col - 1)
+    assert(right.row == room.row && right.col == 0)
+    assert(up.row == 1 && up.col == room.col)
+    assert(down.row == es.SimConfig.roomRows - 1 && down.col == room.col)
+  }
+
   test("room is not infected") {
     val es = new EpidemySimulator
     val person = es.persons.head
