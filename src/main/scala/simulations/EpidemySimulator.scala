@@ -37,7 +37,6 @@ class EpidemySimulator extends Simulator {
     for (id <- 0 until numInfected) people(id).infected = true
     for (person <- people) 
       rooms(person.row)(person.col) enter person
-    printRooms
     people
   }
 
@@ -60,6 +59,11 @@ class EpidemySimulator extends Simulator {
     def isInfected() : Boolean = {
       val infectious = people filter (p => p.sick || p.dead)
       !infectious.isEmpty
+    }
+
+    def size() : Int = {
+      println("people.size=" + people.size)
+      people.size
     }
 
     override def toString() = {

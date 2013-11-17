@@ -19,6 +19,13 @@ class EpidemySuite extends FunSuite {
       )
   }
 
+  test("all people are allocated to rooms") {
+    val es = new EpidemySimulator
+    val roomSizes = for (r <- 0 until es.SimConfig.roomRows; 
+      c <- 0 until es.SimConfig.roomColumns) yield es.rooms(r)(c).size
+    assert(roomSizes.sum == es.SimConfig.population, "all people are allocated to rooms")
+  }
+
   test("room is not infected") {
     val es = new EpidemySimulator
     val person = es.persons.head
