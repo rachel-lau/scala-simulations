@@ -36,7 +36,7 @@ class EpidemySimulator extends Simulator {
     val people = (0 until population).toList.map(id => new Person(id))
     for (id <- 0 until numInfected) people(id).becomeInfected
     for (person <- people) 
-      rooms(person.row)(person.col) enter person
+      rooms(person.row)(person.col) allocate person
     people
   }
 
@@ -60,10 +60,14 @@ class EpidemySimulator extends Simulator {
   class Room(val row: Int, val col: Int) {
     var people: Set[Person] = new collection.immutable.HashSet()
 
-    def enter(person: Person) {
+    def allocate(person: Person) {
       people = people + person
       person.row = row
       person.col = col
+    }
+
+    def enter(person: Person) {
+      allocate(person)
 
       // A person may get infected if the room has infectious people.
       // However, an immune person cannot get infected
