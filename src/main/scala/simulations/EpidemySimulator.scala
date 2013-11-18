@@ -50,6 +50,8 @@ class EpidemySimulator extends Simulator {
 
     def enter(person: Person) {
       people = people + person
+      person.row = row
+      person.col = col
     }
 
     def leave(person: Person) {
@@ -105,10 +107,18 @@ class EpidemySimulator extends Simulator {
     var row: Int = randomBelow(roomRows)
     var col: Int = randomBelow(roomColumns)
 
-    //
-    // to complete with simulation logic
-    //
+    // A person moves to room without sick or dead people
     def move() {
+      if (!dead) {
+        val currentRoom = rooms(row)(col)
+        val safeRooms = currentRoom.neighbours filter (r => !r.isInfected)
+        if (!safeRooms.isEmpty) {
+          val nextRoom: Room = safeRooms.toList(0)
+          currentRoom.leave(this)
+          nextRoom.enter(this)
+        }
+        scheduleNextMove
+      }
     }
 
     // A person moves within the next 5 days
@@ -144,8 +154,6 @@ class EpidemySimulator extends Simulator {
       } 
     }
 
-    // Dead people do not move
-    if (!dead) 
-      scheduleNextMove
+    scheduleNextMove
   }
 }
