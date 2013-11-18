@@ -34,10 +34,22 @@ class EpidemySimulator extends Simulator {
   val persons: List[Person] = {
     val numInfected = (population * prevalenceRate).toInt
     val people = (0 until population).toList.map(id => new Person(id))
-    for (id <- 0 until numInfected) people(id).infected = true
+    for (id <- 0 until numInfected) people(id).becomeInfected
     for (person <- people) 
       rooms(person.row)(person.col) enter person
     people
+  }
+
+  // The transmissiblityRate is 0.40 means 2 out of 5
+  def randomInfected() : Boolean = {
+    val rand = randomBelow(5)
+    rand == 0 || rand == 1
+  }
+
+  // The dead rate is 0.25 means 1 out of 4
+  def randomDead() : Boolean = {
+    val rand = randomBelow(4)
+    rand == 0
   }
 
   def printRooms() {
@@ -52,6 +64,11 @@ class EpidemySimulator extends Simulator {
       people = people + person
       person.row = row
       person.col = col
+
+      // A person may get infected if the room has infectious people
+      if (isInfected && randomInfected) {
+        person.becomeInfected
+      } 
     }
 
     def leave(person: Person) {
@@ -107,6 +124,14 @@ class EpidemySimulator extends Simulator {
     var row: Int = randomBelow(roomRows)
     var col: Int = randomBelow(roomColumns)
 
+    def becomeInfected() {
+      infected = true
+      scheduleToSick()
+      scheduleToDie()
+      scheduleToImmune()
+      scheduleToHealthy()
+    }
+
     // A person moves to room without sick or dead people
     def move() {
       if (!dead) {
@@ -121,6 +146,7 @@ class EpidemySimulator extends Simulator {
       }
     }
 
+
     // A person moves within the next 5 days
     def scheduleNextMove() {
       val delay = randomBelow(nextMoveDelay) + 1
@@ -129,28 +155,36 @@ class EpidemySimulator extends Simulator {
 
     def scheduleToSick() {
       afterDelay(infectedToSickDelay) {
-        sick = true 
+        if (!dead) {
+          sick = true 
+        }
       } 
     }
 
     def scheduleToDie() {
       afterDelay(infectedToDeathDelay) { 
-        dead = true 
+        if (randomDead) {
+          dead = true 
+        }
       } 
     }
 
     def scheduleToImmune() {
       afterDelay(infectedToImmuneDelay) { 
-        immune = true 
+        if (!dead) {
+          immune = true 
+        }
       } 
     }
 
     def scheduleToHealthy() {
       afterDelay(infectedToHealthyDelay) { 
-        infected = false
-        sick = false
-        immune = false
-        dead = false
+        if (!dead) {
+          infected = false
+          sick = false
+          immune = false
+          dead = false
+        }
       } 
     }
 
