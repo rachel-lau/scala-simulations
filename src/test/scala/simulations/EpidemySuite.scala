@@ -97,11 +97,14 @@ class EpidemySuite extends FunSuite {
     val es = new EpidemySimulator
     val person = es.persons.head
     val room = es.rooms(person.row)(person.col)
-    person.infected = false
-    person.sick = false
-    person.immune = false
-    person.dead = false
-    assert(!room.isInfected, "room is not infected")
+    val people = room.people
+    for (person <- people) {
+      person.infected = false
+      person.sick = false
+      person.immune = false
+      person.dead = false
+    }
+    assert(!room.isInfectious, "room is not infected")
   }
 
   test("room is infected by a sick person") {
@@ -112,7 +115,7 @@ class EpidemySuite extends FunSuite {
     person.sick = true
     person.immune = false
     person.dead = false
-    assert(room.isInfected, "room is infected by a sick person")
+    assert(room.isInfectious, "room is infected by a sick person")
   }
 
   test("room is infected by a dead person") {
@@ -123,7 +126,7 @@ class EpidemySuite extends FunSuite {
     person.sick = true
     person.immune = false
     person.dead = true
-    assert(room.isInfected, "room is infected by a dead person")
+    assert(room.isInfectious, "room is infected by a dead person")
   }
 
   test("move a person to another room") {

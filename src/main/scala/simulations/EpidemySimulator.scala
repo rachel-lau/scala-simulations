@@ -65,18 +65,28 @@ class EpidemySimulator extends Simulator {
       person.row = row
       person.col = col
 
-      // A person may get infected if the room has infectious people
-      if (isInfected && randomInfected) {
-        person.becomeInfected
-      } 
+      // A person may get infected if the room has infectious people.
+      // However, an immune person cannot get infected
+      if (!person.isInfected) {
+        if (isInfectious && !person.isImmune) {
+          if (randomInfected) {
+            person.becomeInfected
+          }
+        }
+      }
     }
 
     def leave(person: Person) {
       people = people - person
     }
 
-    def isInfected() : Boolean = {
-      val infectious = people filter (p => p.sick || p.dead)
+    def isInfectious() : Boolean = {
+      val infectious = people filter (p => p.isInfectious)
+      !infectious.isEmpty
+    }
+
+    def isVisiblyInfectious() : Boolean = {
+      val infectious = people filter (p => p.isVisiblyInfectious)
       !infectious.isEmpty
     }
 
@@ -124,21 +134,70 @@ class EpidemySimulator extends Simulator {
     var row: Int = randomBelow(roomRows)
     var col: Int = randomBelow(roomColumns)
 
-    def becomeInfected() {
-      infected = true
-      scheduleToSick()
-      scheduleToDie()
-      scheduleToImmune()
-      scheduleToHealthy()
+    def isInfected() : Boolean = {
+      infected
     }
 
-    // A person moves to room without sick or dead people
+    def isImmune() : Boolean = {
+      immune
+    }
+
+    def isInfectious() : Boolean = {
+      infected || sick || immune || dead
+    }
+
+    def isVisiblyInfectious() : Boolean = {
+      sick || dead
+    }
+
+    def becomeInfected() {
+      if (!dead) {
+        infected = true
+        scheduleToSick()
+        scheduleToDie()
+        scheduleToImmune()
+        scheduleToHealthy()
+      }
+    }
+
+    def becomeSick() {
+      if (!dead) {
+        sick = true 
+      }
+    }
+
+    def becomeDead() {
+      if (!dead) {
+        if (randomDead) {
+          dead = true 
+        }
+      }
+    }
+
+    def becomeImmune() {
+      if (!dead) {
+        sick = false
+        immune = true 
+      }
+    }
+
+    def becomeHealthy() {
+      if (!dead) {
+        infected = false
+        sick = false
+        immune = false
+        dead = false
+      }
+    }
+
+    // A person avoids rooms which are visibly infectious
     def move() {
       if (!dead) {
         val currentRoom = rooms(row)(col)
-        val safeRooms = currentRoom.neighbours filter (r => !r.isInfected)
-        if (!safeRooms.isEmpty) {
-          val nextRoom: Room = safeRooms.toList(0)
+        val neighbours = currentRoom.neighbours filter (r => !r.isVisiblyInfectious)
+        if (!neighbours.isEmpty) {
+          val safeRooms = neighbours.toList
+          val nextRoom = randomRoom(safeRooms)
           currentRoom.leave(this)
           nextRoom.enter(this)
         }
@@ -146,45 +205,41 @@ class EpidemySimulator extends Simulator {
       }
     }
 
+    def randomRoom(rooms: List[Room]) : Room = {
+      val len = rooms.length
+      val index = randomBelow(len)
+      rooms(index)
+    }
 
     // A person moves within the next 5 days
     def scheduleNextMove() {
       val delay = randomBelow(nextMoveDelay) + 1
-      afterDelay(delay) { move() }
+      afterDelay(delay) { 
+        move 
+      }
     }
 
     def scheduleToSick() {
       afterDelay(infectedToSickDelay) {
-        if (!dead) {
-          sick = true 
-        }
+        becomeSick
       } 
     }
 
     def scheduleToDie() {
       afterDelay(infectedToDeathDelay) { 
-        if (randomDead) {
-          dead = true 
-        }
+        becomeDead
       } 
     }
 
     def scheduleToImmune() {
       afterDelay(infectedToImmuneDelay) { 
-        if (!dead) {
-          immune = true 
-        }
+        becomeImmune
       } 
     }
 
     def scheduleToHealthy() {
       afterDelay(infectedToHealthyDelay) { 
-        if (!dead) {
-          infected = false
-          sick = false
-          immune = false
-          dead = false
-        }
+        becomeHealthy
       } 
     }
 
