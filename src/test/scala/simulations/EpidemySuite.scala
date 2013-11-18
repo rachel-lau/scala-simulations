@@ -26,7 +26,7 @@ class EpidemySuite extends FunSuite {
     assert(roomSizes.sum == es.SimConfig.population, "all people are allocated to rooms")
   }
 
-  test("find correct neightbours of room(0,0)") {
+  test("find correct neighbours of room(0,0)") {
     val es = new EpidemySimulator
     val room = es.rooms(0)(0)
     val left = room.toLeft // Room(0,7)
@@ -39,7 +39,7 @@ class EpidemySuite extends FunSuite {
     assert(down.row == (es.SimConfig.roomRows - 1) && up.col == room.col)
   }
 
-  test("find correct neightbours of room(7,7)") {
+  test("find correct neighbours of room(7,7)") {
     val es = new EpidemySimulator
     val room = es.rooms(7)(7)
     val left = room.toLeft // Room(7,6)
@@ -52,7 +52,7 @@ class EpidemySuite extends FunSuite {
     assert(down.row == room.row - 1 && up.col == room.col)
   }
 
-  test("find correct neightbours of room(7,0)") {
+  test("find correct neighbours of room(7,0)") {
     val es = new EpidemySimulator
     val room = es.rooms(7)(0)
     val left = room.toLeft // Room(7,7)
@@ -65,7 +65,7 @@ class EpidemySuite extends FunSuite {
     assert(down.row == room.row - 1 && down.col == 0)
   }
 
-  test("find correct neightbours of room(0,7)") {
+  test("find correct neighbours of room(0,7)") {
     val es = new EpidemySimulator
     val room = es.rooms(0)(7)
     val left = room.toLeft // Room(0,6)
@@ -76,6 +76,21 @@ class EpidemySuite extends FunSuite {
     assert(right.row == room.row && right.col == 0)
     assert(up.row == 1 && up.col == room.col)
     assert(down.row == es.SimConfig.roomRows - 1 && down.col == room.col)
+  }
+
+  test("find all neighbours of room(0,0)") {
+    val es = new EpidemySimulator
+    val room = es.rooms(0)(0)
+    val left = room.toLeft // Room(0,7)
+    val right = room.toRight // Room(0,1)
+    val up = room.toUp // Room(1,0)
+    val down = room.toDown // Room(7,0)
+    val neighbours = room.neighbours
+    assert(neighbours.size == 4);
+    assert(neighbours.contains(left))
+    assert(neighbours.contains(right))
+    assert(neighbours.contains(up))
+    assert(neighbours.contains(down))
   }
 
   test("room is not infected") {
